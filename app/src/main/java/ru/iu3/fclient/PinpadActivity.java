@@ -8,7 +8,7 @@ import android.widget.TextView;
 
 public class PinpadActivity  extends MainActivity{
    TextView tvPin;
-   String pin =" ";
+   String pin ="";
     final int MAX_KEYS = 10;
    @Override
     protected void onCreate(Bundle savedInstanceState)

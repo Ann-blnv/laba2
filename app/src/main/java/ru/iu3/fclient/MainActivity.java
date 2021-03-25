@@ -1,20 +1,26 @@
+
 package ru.iu3.fclient;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.nio.charset.StandardCharsets;
-//import org.appache.commons.codec.DecoderException;
-//import org.appache.commons.codec.binary.Hex;
-
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
+
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+
+import javax.net.ssl.HttpsURLConnection;
+
 public class MainActivity extends AppCompatActivity {
 
     // Used to load the 'native-lib' library on application startup.
@@ -31,10 +37,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Example of a call to a native method
         //TextView tv = findViewById(R.id.sample_text);
-       // tv.setText(stringFromJNI());
+        //tv.setText(stringFromJNI());
 
         byte[] key = randomBytes(16);
-        byte[] data = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
+        byte[] data = {'H', 'e', 'l', 'l', 'o',};
         byte[] encrypted = encrypt(key, data);
         byte[] decrypted = decrypt(key, encrypted);
         String originalData  = new String(data, StandardCharsets.UTF_8);
@@ -54,8 +60,9 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("Original: "  + originalData);
         System.out.println("Encrypted: " + encryptedData);
         System.out.println("Decrypted: " + decryptedData);
+        //tv.setText(output);
     }
-    //вспомогательная функция для преобразования строки в двоичный массив.
+
     public static byte[] StringToHex(String s)
     {
         byte[] hex;
@@ -69,30 +76,18 @@ public class MainActivity extends AppCompatActivity {
         }
         return hex;
     }
-    public void onButtonClick(View v){
-        //Добавим тест шифрации и дешифрации TDEA. Для наглядности зададим
-        //ключ и данные HEX-ASCII строками и воспользуемся процедурами преобразования
-        //в массив байтов и обратно из библиотеки commons-codec.
-        //Toast.makeText(this, "Clicked", Toast.LENGTH_SHORT).show();
-        byte [] key = StringToHex("0123456789ABCDEF0123456789ABCDE0");
-        byte [] enc = encrypt(key,StringToHex("000000000000000102"));
-        byte [] dec = decrypt(key,enc);
-        String s = new String (Hex.encodeHex(dec)).toUpperCase();
-        //Воспользуемся для вывода сообщений классом Toast
-        //Этот код выводит на экран сообщение “Clicked”, которое исчезает через некоторое время.
-       //Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
-        // В обработчике onButtonClick заменим код на вызов PinpadActivity.
-       // Intent it = new Intent(this, PinpadActivity.class);
-       // startActivity(it);
-        //Заменим в MainAcitivity вызов PinpadActivity на
-        Intent it = new Intent(this, PinpadActivity.class);
-        startActivityForResult(it, 0);
-        //Теперь видно откуда берется requestCode.
-        // Это значение нужно для того чтобы идентифицировать ответы от разных вызовов Activity.
+
+    public void onButtonClick (View v)
+    {
+        //Toast.makeText(this, stringFromJNI(), Toast.LENGTH_SHORT).show();
+        //Intent it = new Intent(this,PinpadActivity.class);
+        //startActivityForResult(it, 0);
+        Log.e("BTN_log", "Pressed");
+        TestHttpClient();
+
     }
-    //Добавим к классу MainActivity обработчик результата.
-    //Эта функция будет вызвана, когда PinpadActivity отправит нам Intent с результатом.
-    @Override
+
+   /* @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 0) {
@@ -102,11 +97,55 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+*/
+    // HTTP TEST
+    protected void TestHttpClient()
+    {
+        new Thread(() -> {
+            try {
+
+                //НЕ РАБОТАЕТ БЭКЕНД!!!!
+
+              //HttpsURLConnection uc = (HttpsURLConnection) (new URL("https://go.skillbox.ru").openConnection());
+                HttpURLConnection uc = (HttpURLConnection) (new URL( "http://192.168.8.8:8081/api/v1/title").openConnection());
+                //HttpsURLConnection uc = (HttpsURLConnection) (new URL( "https://localhost:8081/api/v1/title").openConnection());
+                InputStream inputStream = uc.getInputStream();
+                String html = IOUtils.toString(inputStream);
+                String title = getPageTitle(html);
+               // Toast.makeText(this, title, Toast.LENGTH_SHORT).show();
+                runOnUiThread(() ->
+                {
+                    Toast.makeText(this, title, Toast.LENGTH_SHORT).show();
+                    Log.e("Title_output", title);
+                });
+            }
+            catch (Exception ex) {
+                Log.e("fapptag", "Https client fails", ex);
+            }
+        }).start();
+    }
+//http://localhost:8081/api/v1/title
+
+    private String getPageTitle(String html) {
+        int pos = html.indexOf("<title");
+        String p = "not found";
+        if (pos >= 0)
+        {
+            int pos2 = html.indexOf("<", pos + 1);
+            if (pos2 >= 0)
+            {
+                p = html.substring(pos + 7, pos2);
+            }
+        }
+        return p;
+    }
+
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
+
     public native String stringFromJNI();
     public static native int initRng();
     public static native byte[] randomBytes(int n);
