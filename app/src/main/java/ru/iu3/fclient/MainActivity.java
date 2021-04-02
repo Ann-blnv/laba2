@@ -1,4 +1,3 @@
-
 package ru.iu3.fclient;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -79,52 +78,49 @@ public class MainActivity extends AppCompatActivity {
 
     public void onButtonClick (View v)
     {
-        //Toast.makeText(this, stringFromJNI(), Toast.LENGTH_SHORT).show();
-        //Intent it = new Intent(this,PinpadActivity.class);
-        //startActivityForResult(it, 0);
+//        Toast.makeText(this, stringFromJNI(), Toast.LENGTH_SHORT).show();
+//        Intent it = new Intent(this,PinpadActivity.class);
+//        startActivityForResult(it, 0);
         Log.e("BTN_log", "Pressed");
         TestHttpClient();
 
     }
 
-   /* @Override
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 0) {
             if (resultCode == RESULT_OK || data != null) {
                 String pin = data.getStringExtra("pin");
                 Toast.makeText(this, pin, Toast.LENGTH_SHORT).show();
+                Log.e("PinPadCode", pin);
             }
         }
     }
-*/
+
     // HTTP TEST
     protected void TestHttpClient()
     {
         new Thread(() -> {
             try {
-
-                //НЕ РАБОТАЕТ БЭКЕНД!!!!
-
-              //HttpsURLConnection uc = (HttpsURLConnection) (new URL("https://go.skillbox.ru").openConnection());
-                HttpURLConnection uc = (HttpURLConnection) (new URL( "http://192.168.8.8:8081/api/v1/title").openConnection());
-                //HttpsURLConnection uc = (HttpsURLConnection) (new URL( "https://localhost:8081/api/v1/title").openConnection());
+                //HttpsURLConnection uc = (HttpsURLConnection) (new URL("https://ru.wikipedia.org").openConnection());
+                HttpURLConnection uc =
+                        (HttpURLConnection) (new URL("http://10.0.2.2:8081/api/v1/title")).openConnection();
                 InputStream inputStream = uc.getInputStream();
                 String html = IOUtils.toString(inputStream);
                 String title = getPageTitle(html);
-               // Toast.makeText(this, title, Toast.LENGTH_SHORT).show();
                 runOnUiThread(() ->
                 {
-                    Toast.makeText(this, title, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, title, Toast.LENGTH_SHORT).show();
                     Log.e("Title_output", title);
                 });
             }
             catch (Exception ex) {
-                Log.e("fapptag", "Https client fails", ex);
+                Log.e("fapptag", "Http client fails", ex);
             }
         }).start();
     }
-//http://localhost:8081/api/v1/title
+
 
     private String getPageTitle(String html) {
         int pos = html.indexOf("<title");
@@ -132,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
         if (pos >= 0)
         {
             int pos2 = html.indexOf("<", pos + 1);
-            if (pos2 >= 0)
+            if (pos >= 0)
             {
                 p = html.substring(pos + 7, pos2);
             }

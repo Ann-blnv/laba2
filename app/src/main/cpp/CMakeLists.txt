@@ -4,7 +4,6 @@
 # Sets the minimum version of CMake required to build the native library.
 
 cmake_minimum_required(VERSION 3.10.2)
-set(ABI "x86")
 
 # Declares and names the project.
 
@@ -37,33 +36,24 @@ find_library( # Sets the name of the path variable.
               # you want CMake to locate.
               log )
 
-#SPDLOG
+#add spdlog and mbedcrypto
 add_definitions(-DSPDLOG_COMPILED_LIB)
 add_library(spdlog STATIC IMPORTED)
-set_target_properties(
-        spdlog PROPERTIES IMPORTED_LOCATION "/Users/anna/Desktop/AndroidStudioProjects/libs/spdlog/build/${ABI}/libspdlog.a"
-)
-
-
-
-#MBEDTLS
 add_library(mbedcrypto SHARED IMPORTED)
-configure_file(
-        "/Users/anna/Desktop/AndroidStudioProjects/libs/mbedtls/build/${ABI}/library/libmbedcrypto.so"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../cmakeLibs/${ABI}/libmbedcrypto.so"
-        COPYONLY
-)
 set_target_properties(
-        mbedcrypto PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/../cmakeLibs/${ABI}/libmbedcrypto.so"
+        spdlog PROPERTIES IMPORTED_LOCATION /Users/anna/Desktop/AndroidStudioProjects/AndroidStudioProjects/libs/spdlog/build/x86/libspdlog.a
+        mbedcrypto PROPERTIES IMPORTED_LOCATION /Users/anna/Desktop/AndroidStudioProjects/fclient/app/src/main/cmakeLibs/x86/libmbedcrypto.so
 )
-
-
-
-
 target_include_directories(
         native-lib PUBLIC
-        "/Users/anna/Desktop/AndroidStudioProjects/libs/spdlog/spdlog/include"
-        "/Users/anna/Desktop/AndroidStudioProjects/libs/mbedtls/mbedtls/include"
+        /Users/anna/Desktop/AndroidStudioProjects/libs/spdlog/spdlog/include
+        /Users/anna/Desktop/AndroidStudioProjects/libs/mbedtls/mbedtls/include
+)
+
+configure_file(
+        /Users/anna/Desktop/AndroidStudioProjects/libs/mbedtls/build/x86/library/libmbedcrypto.so
+        /Users/anna/Desktop/AndroidStudioProjects/fclient/app/src/main/cmakeLibs/x86/libmbedcrypto.so
+        COPYONLY
 )
 
 # Specifies libraries CMake should link to your target library. You
